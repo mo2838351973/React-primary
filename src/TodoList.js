@@ -1,61 +1,57 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment, } from 'react';
 //import logo from './logo.svg';
-import TodoItem from './TodoItem.js'
+// import TodoItem from './TodoItem.js';
+//import { red } from 'ansi-colors';
+import './TodoList.css';
+// import axios from 'axios';
+import 'antd/dist/antd.css';
+import { Input, Button, List } from 'antd';
+import store from './store';
+import { getInputChangeAction, getItemAddAction, getItemDeleteAction } from './store/actionCreators'
 class TodoList extends Component {
   constructor(props) {
-    super(props)
-    this.state = {
-      list: [
-        'Learn English',
-        'Learn Chinese',
-        'Learn Franch'
-      ],
-      iptValue:''
-    }
-    this.handleDelete = this.handleDelete.bind(this)
-    this.handleBtnClick = this.handleBtnClick.bind(this)
-    this.handleIptValue = this.handleIptValue.bind(this)
+    super(props);
+    this.state = store.getState();
+    this.handleInputChange = this.handleInputChange.bind(this);
+    this.handleStoreChange = this.handleStoreChange.bind(this);
+    store.subscribe(this.handleStoreChange);//订阅store的改变 
   }
-  handleIptValue(e){
-    this.setState({
-      iptValue:e.target.value
-    })
+  handleStoreChange() {
+    this.setState(store.getState());
   }
-  handleBtnClick(){
-    this.setState({
-      list:[...this.state.list,this.state.iptValue],
-      iptValue:''
-    })
+  handleInputChange(e) {
+    const action = getInputChangeAction(e.target.value);
+    store.dispatch(action);
   }
-  handleItemClick(index){
-    let list = [...this.state.list]
-    list.splice(index,1)
-    this.setState({
-      list:list
-    })
+  handleBtnClick() {
+    const action = getItemAddAction();
+    store.dispatch(action);
   }
-  handleDelete(index){
-    let list = [...this.state.list]
-    list.splice(index,1)
-    this.setState({
-      list:list
-    })
+  handleItemDelete(index) {
+    const action = getItemDeleteAction(index);
+    store.dispatch(action);
   }
   render() {
     return (
-     <div>
-       <div>
-         <input type="text" value={this.state.iptValue} onChange={this.handleIptValue} />
-         <button onClick={this.handleBtnClick}>Add</button>
-       </div>
-       <ul>
-         {
-           this.state.list.map((item,index)=>{
-             return <TodoItem key={index} content={item} index={index} handleDelete={this.handleDelete}/>
-           })
-         }
-       </ul>
-     </div>
+      <Fragment>
+        <div style={{marginTop: '10px'}}>
+          <div>
+            <Input 
+              placeholder="todo info" 
+              value={this.state.inputValue} 
+              style={{width: '300px', marginRight: '10px'}}
+              onChange={this.handleInputChange}
+            />
+            <Button type="primary" onClick={this.handleBtnClick}>Primary</Button>
+          </div>
+          <List
+            style={{width: '300px', marginTop: '10px'}}
+            bordered
+            dataSource={this.state.list}
+            renderItem={(item, index) => <List.Item onClick={this.handleItemDelete.bind(this, index)}>{item}</List.Item>}
+          />
+        </div>
+      </Fragment>
     );
   }
 }
